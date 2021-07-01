@@ -31,7 +31,12 @@ class Main {
             println(httpRequest.toString())
 
             val ostream = client.getOutputStream()
-            ostream.write("Bye".encodeToByteArray())
+            val resp = """
+                HTTP/1.1 200 OK
+                
+                :-)
+                """.trimIndent()
+            ostream.write(resp.encodeToByteArray())
         }
     }
 }
