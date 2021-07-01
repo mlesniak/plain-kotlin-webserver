@@ -13,7 +13,8 @@ class Main {
             val istream = client.getInputStream()
             val bs = istream.readAllBytes()
             val content = String(bs)
-            println(content)
+            val httpRequest = HttpRequestBuilder.parse(content)
+            println(httpRequest.toString())
 
             val ostream = client.getOutputStream()
             ostream.write("Bye".encodeToByteArray())
