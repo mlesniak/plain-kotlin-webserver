@@ -1,3 +1,5 @@
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.ServerSocket
 
 class Main {
@@ -10,9 +12,21 @@ class Main {
             val ss = ServerSocket(port)
             val client = ss.accept()
 
-            val istream = client.getInputStream()
-            val bs = istream.readAllBytes()
-            val content = String(bs)
+            val sb = StringBuilder()
+            val istream = BufferedReader(InputStreamReader(client.getInputStream()))
+
+            var newlines = 0
+            while (true) {
+                var line = istream.readLine() ?: break
+                println("Receiving '$line'")
+                if (line == "") {
+                    break
+                }
+                sb.append(line)
+                sb.append("\r\n") // TODO(mlesniak) strange pattern, works for now...
+            }
+
+            val content = sb.toString()
             val httpRequest = HttpRequestBuilder.parse(content)
             println(httpRequest.toString())
 

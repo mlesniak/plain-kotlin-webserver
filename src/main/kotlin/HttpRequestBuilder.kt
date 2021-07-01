@@ -3,7 +3,7 @@ class HttpRequestBuilder {
 
         fun parse(input: String): HttpRequest {
             // GET /wiki/Spezial:Search?search=Katzen&go=Artikel HTTP/1.1
-            val lines = input.split("\r")
+            val lines = input.split("\r\n")
             val command = lines[0]
             // headers are the rest
             val commands = command.split(" ")
