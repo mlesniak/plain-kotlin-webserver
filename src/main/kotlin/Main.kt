@@ -3,12 +3,14 @@ import java.io.InputStreamReader
 import java.net.ServerSocket
 import java.net.Socket
 
-class WebServer(val port: Int = 8080) {
+typealias HttpHandler = (HttpRequest) -> Unit
+
+class WebServer(port: Int = 8080) {
     private val log: Log = Log.of(WebServer::class.java)
     private val socket: ServerSocket
+    private val handlers: MutableMap<HttpRequest, HttpHandler> = mutableMapOf()
 
     init {
-        val port = 8080
         log.info("Listening on port $port")
         socket = ServerSocket(port)
     }
@@ -19,18 +21,16 @@ class WebServer(val port: Int = 8080) {
             log.info("Handling request")
 
             val request = parseRequest(client)
-            // TODO(mlesniak) Handle request
-            val ostream = client.getOutputStream()
-            val resp = """
-                HTTP/1.1 200 OK
-                Content-Size: 3
-                
-                :-)
-                """.trimIndent()
-            ostream.write(resp.encodeToByteArray())
+            request.ostream = client.getOutputStream()
 
-            ostream.close()
-            // istream.close() // TODO(mlesniak) how to do this?
+            val h = handlers[request]
+            if (h == null) {
+                request.ostream.close()
+                continue
+            }
+            h(request)
+
+            request.ostream.close()
         }
     }
 
@@ -50,13 +50,30 @@ class WebServer(val port: Int = 8080) {
 
         return HttpRequestBuilder.parse(content)
     }
+
+    fun handle(method: HttpMethod, path: String, handler: (HttpRequest) -> Unit) {
+        handlers[HttpRequest(method, path)] = handler
+    }
 }
 
 class Main {
     companion object {
+        private val log: Log = Log.of(Main::class.java)
+
         @JvmStatic
         fun main(args: Array<String>) {
             val server = WebServer()
+            server.handle(HttpMethod.GET, "/") {
+                log.info("Handling it")
+
+                val resp = """
+                    HTTP/1.1 200 OK
+                    Content-Size: 3
+
+                    :-)
+                    """.trimIndent()
+                it.ostream.write(resp.encodeToByteArray())
+            }
             server.start()
         }
     }

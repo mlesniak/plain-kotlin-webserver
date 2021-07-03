@@ -1,3 +1,5 @@
+import java.io.OutputStream
+
 class HttpRequestBuilder {
     companion object {
 
@@ -27,10 +29,12 @@ enum class HttpMethod {
     PATCH,
     HEAD,
     OPTIONS,
-
 }
 
 data class HttpRequest(
     val method: HttpMethod,
     val path: String,
-)
+) {
+    // lateinit var istream: InputStream
+    lateinit var ostream: OutputStream
+}
