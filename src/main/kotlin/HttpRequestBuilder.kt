@@ -8,17 +8,28 @@ class HttpRequestBuilder {
             // headers are the rest
             val commands = command.split(" ")
 
-            val method = HttpMethod.valueOf(commands[0])
-            val resource = commands[1]
-            val protocol = commands[2]
+            try {
+                val method = HttpMethod.valueOf(commands[0])
+                val resource = commands[1]
+                val protocol = commands[2]
 
-            return HttpRequest(protocol, method, resource)
+                return HttpRequest(protocol, method, resource)
+            } catch (e: Exception) {
+                TODO(commands[0])
+            }
         }
     }
 }
 
 enum class HttpMethod {
-    GET
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    PATCH,
+    HEAD,
+    OPTIONS,
+
 }
 
 data class HttpRequest(

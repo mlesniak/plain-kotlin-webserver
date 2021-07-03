@@ -2,20 +2,22 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.ServerSocket
 
-class Main {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val port = 8080
+class WebServer(val port: Int = 8080) {
+    private val socket: ServerSocket
 
-            println("Listening on port $port")
-            val ss = ServerSocket(port)
-            val client = ss.accept()
+    init {
+        val port = 8080
+        println("Listening on port $port")
+        socket = ServerSocket(port)
+    }
+
+    fun start() {
+        while (true) {
+            val client = socket.accept()
 
             val sb = StringBuilder()
             val istream = BufferedReader(InputStreamReader(client.getInputStream()))
 
-            var newlines = 0
             while (true) {
                 var line = istream.readLine() ?: break
                 println("Receiving '$line'")
@@ -37,6 +39,19 @@ class Main {
                 :-)
                 """.trimIndent()
             ostream.write(resp.encodeToByteArray())
+
+            ostream.close()
+            istream.close()
+        }
+    }
+}
+
+class Main {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val server = WebServer()
+            server.start()
         }
     }
 }
