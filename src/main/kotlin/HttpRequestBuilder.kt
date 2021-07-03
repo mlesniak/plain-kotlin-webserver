@@ -2,7 +2,6 @@ class HttpRequestBuilder {
     companion object {
 
         fun parse(input: String): HttpRequest {
-            // GET /wiki/Spezial:Search?search=Katzen&go=Artikel HTTP/1.1
             val lines = input.split("\r\n")
             val command = lines[0]
             // headers are the rest
@@ -11,9 +10,8 @@ class HttpRequestBuilder {
             try {
                 val method = HttpMethod.valueOf(commands[0])
                 val resource = commands[1]
-                val protocol = commands[2]
 
-                return HttpRequest(protocol, method, resource)
+                return HttpRequest(method, resource)
             } catch (e: Exception) {
                 TODO(commands[0])
             }
@@ -33,7 +31,6 @@ enum class HttpMethod {
 }
 
 data class HttpRequest(
-    val protocol: String,
     val method: HttpMethod,
     val path: String,
 )
