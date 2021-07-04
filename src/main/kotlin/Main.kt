@@ -17,20 +17,25 @@ class WebServer(port: Int = 8080) {
 
     fun start() {
         while (true) {
-            val client = socket.accept()
-            log.info("Handling request")
+            ignoreException {
+                val client = socket.accept()
+                log.info("Accepting connection from=${client.remoteSocketAddress}")
+                val request = parseRequest(client)
 
-            val request = parseRequest(client)
-            request.ostream = client.getOutputStream()
-
-            val h = handlers[request]
-            if (h == null) {
-                request.ostream.close()
-                continue
+                handlers[request]?.let {
+                    log.info("Handling request $request")
+                    it(request)
+                    request.ostream.close()
+                } ?: IllegalArgumentException("No handler for $request")
             }
-            h(request)
+        }
+    }
 
-            request.ostream.close()
+    private fun ignoreException(function: () -> Unit) {
+        try {
+            function()
+        } catch (e: Exception) {
+            log.error("Unhandled exception ${e.message}")
         }
     }
 
@@ -48,7 +53,9 @@ class WebServer(port: Int = 8080) {
         }
         val content = sb.toString()
 
-        return HttpRequestBuilder.parse(content)
+        val request = HttpRequestBuilder.parse(content)
+        request.ostream = client.getOutputStream()
+        return request
     }
 
     fun handle(method: HttpMethod, path: String, handler: (HttpRequest) -> Unit) {
@@ -64,7 +71,7 @@ class Main {
         fun main(args: Array<String>) {
             val server = WebServer()
             server.handle(HttpMethod.GET, "/") {
-                log.info("Handling it")
+                log.info("Handling /")
 
                 val resp = """
                     HTTP/1.1 200 OK

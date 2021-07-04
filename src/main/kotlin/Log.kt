@@ -3,17 +3,23 @@ import java.util.*
 
 class Log(val clazz: Class<out Any?>) {
     enum class Level {
-        INFO
+        INFO,
+        ERROR
     }
 
     private fun defaultHandler(level: Level, msg: String) {
         val sdf = SimpleDateFormat("HH:MM:ss")
         val timestamp = sdf.format(Date())
-        println("[$level] $timestamp $msg")
+        val l = level.toString().padEnd(5, ' ')
+        println("[$l] $timestamp $msg")
     }
 
     fun info(msg: String) {
         defaultHandler(Level.INFO, msg)
+    }
+
+    fun error(msg: String) {
+        defaultHandler(Level.ERROR, msg)
     }
 
     companion object {
