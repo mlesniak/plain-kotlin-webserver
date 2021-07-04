@@ -1,3 +1,4 @@
+import Util.ignoreException
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.ServerSocket
@@ -22,20 +23,12 @@ class WebServer(port: Int = 8080) {
                 log.info("Accepting connection from=${client.remoteSocketAddress}")
                 val request = parseRequest(client)
 
-                handlers[request]?.let {
+                handlers[request]?.let { handler ->
                     log.info("Handling request $request")
-                    it(request)
+                    handler(request)
                     request.ostream.close()
                 } ?: IllegalArgumentException("No handler for $request")
             }
-        }
-    }
-
-    private fun ignoreException(function: () -> Unit) {
-        try {
-            function()
-        } catch (e: Exception) {
-            log.error("Unhandled exception ${e.message}")
         }
     }
 
