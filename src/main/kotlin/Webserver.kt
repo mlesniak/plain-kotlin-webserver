@@ -1,22 +1,20 @@
 import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
 
 typealias HttpHandler = (HttpRequest, HttpResponse) -> Unit
 
-class WebServer(port: Int = 8080) {
+class WebServer(private val port: Int = 8080) {
     private val log: Log = Log.of(WebServer::class.java)
-    private val socket: ServerSocket
     private val handlers: MutableMap<HttpRequest, HttpHandler> = mutableMapOf()
 
-    init {
-        log.info("Listening on port $port")
-        socket = ServerSocket(port)
-    }
-
     fun start() {
+        log.info("Listening on port $port")
+        val socket = ServerSocket(port)
+
         while (true) {
             val client = socket.accept()
             log.info("Accepting connection from=${client.remoteSocketAddress}")
@@ -27,15 +25,22 @@ class WebServer(port: Int = 8080) {
                 val response = HttpResponse()
                 client.getOutputStream().use { os ->
                     handler(request, response)
-
-                    os.write("HTTP/1.1 ${response.status} OK\n".toByteArray())
-                    val bos = response.outputStream as ByteArrayOutputStream
-                    os.write("Content-Size: ${bos.size()}\n".toByteArray())
-                    os.write("\n".toByteArray())
-                    os.write(bos.toByteArray())
+                    writeOutput(os, response)
                 }
             } ?: IllegalArgumentException("No handler for $request")
         }
+    }
+
+    private fun writeOutput(os: OutputStream, response: HttpResponse) {
+        os.write("HTTP/1.1 ${response.status} OK\n".toByteArray())
+        val bos = response.outputStream as ByteArrayOutputStream
+        os.write("Content-Length: ${bos.size()}\n".toByteArray())
+        os.write("\n".toByteArray())
+        os.write(bos.toByteArray())
+    }
+
+    fun handle(method: HttpMethod, path: String, handler: (HttpRequest, HttpResponse) -> Unit) {
+        handlers[HttpRequest(method, path)] = handler
     }
 
     private fun parseRequest(client: Socket): HttpRequest {
@@ -53,9 +58,5 @@ class WebServer(port: Int = 8080) {
         val content = sb.toString()
 
         return HttpRequestBuilder.parse(content)
-    }
-
-    fun handle(method: HttpMethod, path: String, handler: (HttpRequest, HttpResponse) -> Unit) {
-        handlers[HttpRequest(method, path)] = handler
     }
 }

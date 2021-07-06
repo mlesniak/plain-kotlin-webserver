@@ -9,7 +9,7 @@ class Main {
 
             server.handle(HttpMethod.GET, "/") { _, resp ->
                 log.info("Received request")
-                resp.outputStream.write("Hello, world".toByteArray())
+                resp.write("Hello, world\n")
             }
 
             server.start()
