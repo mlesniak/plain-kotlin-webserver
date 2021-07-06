@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 
 class HttpRequestBuilder {
@@ -35,6 +36,11 @@ data class HttpRequest(
     val method: HttpMethod,
     val path: String,
 ) {
-    // lateinit var istream: InputStream
-    lateinit var ostream: OutputStream
+    lateinit var headers: Map<String, String>
+}
+
+class HttpResponse {
+    var status: Int = 200
+    var outputStream: OutputStream = ByteArrayOutputStream()
+    var headers: Map<String, String> = mutableMapOf()
 }
