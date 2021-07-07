@@ -1,9 +1,6 @@
-import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
 import java.net.ServerSocket
-import java.net.Socket
 
 typealias HttpHandler = (HttpRequest, HttpResponse) -> Unit
 
@@ -21,7 +18,7 @@ class WebServer(private val port: Int = 8080) {
         while (true) {
             val client = socket.accept()
             log.info("Accepting connection from=${client.remoteSocketAddress}")
-            val request = parseRequest(client)
+            val request = HttpRequest.parseHTTPRequest(client.getInputStream())
 
             handlers[request]?.let { handler ->
                 log.info("Handling request $request")
@@ -54,20 +51,4 @@ class WebServer(private val port: Int = 8080) {
         handlers[HttpRequest(method, path)] = handler
     }
 
-    private fun parseRequest(client: Socket): HttpRequest {
-        val istream = BufferedReader(InputStreamReader(client.getInputStream()))
-
-        val sb = StringBuilder()
-        while (true) {
-            var line = istream.readLine() ?: break
-            if (line == "") {
-                break
-            }
-            sb.append(line)
-            sb.append("\r\n")
-        }
-        val content = sb.toString()
-
-        return HttpRequest.of(content)
-    }
 }
