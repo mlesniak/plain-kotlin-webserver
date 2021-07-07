@@ -57,6 +57,6 @@ class WebServer(private val port: Int = 8080) {
         }
         val content = sb.toString()
 
-        return HttpRequestBuilder.parse(content)
+        return HttpRequest.of(content)
     }
 }

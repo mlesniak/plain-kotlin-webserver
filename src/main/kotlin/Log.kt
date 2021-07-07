@@ -1,6 +1,9 @@
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Poor man's logging class to prevent any dependencies.
+ **/
 class Log(val clazz: Class<out Any?>) {
     enum class Level {
         INFO,

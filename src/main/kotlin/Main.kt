@@ -1,4 +1,6 @@
-
+/**
+ * Entry point.
+ **/
 class Main {
     companion object {
         private val log: Log = Log.of(Main::class.java)

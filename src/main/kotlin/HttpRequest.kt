@@ -1,50 +1,28 @@
-import java.io.ByteArrayOutputStream
-import java.io.OutputStream
+data class HttpRequest(
+    val method: HttpMethod,
+    val path: String,
+) {
+    var headers: MutableMap<String, String> = mutableMapOf()
 
-class HttpRequestBuilder {
     companion object {
-
-        fun parse(input: String): HttpRequest {
+        fun of(input: String): HttpRequest {
             val lines = input.split("\r\n")
             val command = lines[0]
-            // headers are the rest
             val commands = command.split(" ")
+
+            val headers = mutableMapOf<String, String>()
 
             try {
                 val method = HttpMethod.valueOf(commands[0])
                 val resource = commands[1]
 
-                return HttpRequest(method, resource)
+                val httpRequest = HttpRequest(method, resource)
+                httpRequest.headers = headers
+                return httpRequest
             } catch (e: Exception) {
-                TODO(commands[0])
+                throw IllegalArgumentException("Unable to parse HTTP request: $command")
             }
         }
     }
 }
 
-enum class HttpMethod {
-    GET,
-    POST,
-    PUT,
-    DELETE,
-    PATCH,
-    HEAD,
-    OPTIONS,
-}
-
-data class HttpRequest(
-    val method: HttpMethod,
-    val path: String,
-) {
-    lateinit var headers: Map<String, String>
-}
-
-class HttpResponse {
-    var status: Int = 200
-    var outputStream: OutputStream = ByteArrayOutputStream()
-    var headers: Map<String, String> = mutableMapOf()
-
-    fun write(s: String) {
-        outputStream.write(s.toByteArray())
-    }
-}
