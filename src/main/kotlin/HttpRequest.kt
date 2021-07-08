@@ -7,27 +7,9 @@ data class HttpRequest(
     val path: String,
 ) {
     var headers: MutableMap<String, String> = mutableMapOf()
+    var inputStream: InputStream = InputStream.nullInputStream()
 
     companion object {
-        private fun parseHTTPHeader(input: String): HttpRequest {
-            val lines = input.split("\r\n")
-            val command = lines[0]
-            val commands = command.split(" ")
-
-            val headers = mutableMapOf<String, String>()
-
-            try {
-                val method = HttpMethod.valueOf(commands[0])
-                val resource = commands[1]
-
-                val httpRequest = HttpRequest(method, resource)
-                httpRequest.headers = headers
-                return httpRequest
-            } catch (e: Exception) {
-                throw IllegalArgumentException("Unable to parse HTTP request: $command")
-            }
-        }
-
         fun parseHTTPRequest(ist: InputStream): HttpRequest {
             val bufIs = BufferedReader(InputStreamReader(ist))
 
@@ -39,12 +21,32 @@ data class HttpRequest(
                     break
                 }
                 sb.append(line)
-                sb.append("\r\n")
+                sb.append("\n")
             }
-            val header = sb.toString()
+            sb.deleteCharAt(sb.length - 1)
 
-            // TODO(mlesniak) Refactor this
-            return parseHTTPHeader(header)
+            val lines = sb.toString().split("\n")
+            val command = lines[0]
+            val requestParts = command.split(" ")
+
+            val plainHeaders = mutableMapOf<String, String>()
+            for (i in 1 until lines.size) {
+                val header = lines[i]
+                val parts = header.split(":")
+                plainHeaders[parts[0].trim()] = parts[1].trim()
+            }
+
+            try {
+                val method = HttpMethod.valueOf(requestParts[0])
+                val resource = requestParts[1]
+
+                return HttpRequest(method, resource).apply {
+                    headers = plainHeaders
+                    inputStream = ist
+                }
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Unable to parse HTTP request: $command")
+            }
         }
     }
 }

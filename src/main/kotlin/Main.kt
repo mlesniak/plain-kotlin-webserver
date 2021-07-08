@@ -9,9 +9,14 @@ class Main {
         fun main(args: Array<String>) {
             val server = WebServer()
 
-            server.handle(HttpMethod.GET, "/") { _, resp ->
+            server.handle(HttpMethod.GET, "/") { req, resp ->
                 log.info("Received request")
-                resp.write("Hello, world\n")
+
+                // TODO(mlesniak) allow to send headers as well
+
+                val hs = req.headers.map { it.toString()}.joinToString { it }
+                resp.writeln("Hello, world")
+                resp.writeln("Headers: $hs")
             }
 
             server.start()

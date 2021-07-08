@@ -9,4 +9,8 @@ class HttpResponse {
     fun write(s: String) {
         outputStream.write(s.toByteArray())
     }
+
+    fun writeln(s: String) {
+        outputStream.write("$s\n".toByteArray())
+    }
 }
