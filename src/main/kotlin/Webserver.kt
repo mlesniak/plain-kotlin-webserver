@@ -34,10 +34,15 @@ class WebServer(private val port: Int = 8080) {
     private fun sendHTTPResponse(os: OutputStream, response: HttpResponse) {
         val bos = response.outputStream as ByteArrayOutputStream
 
+        // HTTP response part.
         os.writeLine("HTTP/1.1 ${response.status} OK")
         os.writeLine("Content-Length: ${bos.size()}")
+        response.headers.forEach { entry ->
+            os.writeLine("${entry.key}:${entry.value}")
+        }
         os.writeLine()
 
+        // Payload.
         os.write(bos.toByteArray())
         bos.close()
     }
@@ -50,5 +55,4 @@ class WebServer(private val port: Int = 8080) {
     fun handle(method: HttpMethod, path: String, handler: (HttpRequest, HttpResponse) -> Unit) {
         handlers[HttpRequest(method, path)] = handler
     }
-
 }

@@ -1,3 +1,5 @@
+import java.util.*
+
 /**
  * Entry point.
  **/
@@ -11,12 +13,10 @@ class Main {
 
             server.handle(HttpMethod.GET, "/") { req, resp ->
                 log.info("Received request")
-
-                // TODO(mlesniak) allow to send headers as well
-
                 val hs = req.headers.map { it.toString()}.joinToString { it }
-                resp.writeln("Hello, world")
-                resp.writeln("Headers: $hs")
+                resp.writeln("Response.")
+                resp.writeln("Received Headers: $hs")
+                resp.addHeader("Timestamp", Date().toString())
             }
 
             server.start()
