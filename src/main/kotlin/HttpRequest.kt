@@ -11,7 +11,6 @@ data class HttpRequest(
 
     companion object {
         fun parseHTTPRequest(ist: InputStream): HttpRequest {
-            // TODO(mlesniak) Do we have to close this?
             val bufIs = BufferedReader(InputStreamReader(ist))
 
             // Read HTTP header and leave the rest for the handler.
@@ -33,7 +32,6 @@ data class HttpRequest(
             val plainHeaders = mutableMapOf<String, String>()
             for (i in 1 until lines.size) {
                 val header = lines[i]
-                println(header)
                 val parts = header.split(':', ignoreCase = false, limit = 2)
                 plainHeaders[parts[0].trim()] = parts[1].trim()
             }

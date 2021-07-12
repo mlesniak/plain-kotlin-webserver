@@ -11,7 +11,7 @@ class HttpResponse {
     }
 
     fun writeln(s: String) {
-        outputStream.write("$s\n".toByteArray())
+        write("$s\n")
     }
 
     fun addHeader(key: String, value: String) {

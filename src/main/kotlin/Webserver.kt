@@ -16,18 +16,19 @@ class WebServer(private val port: Int = 8080) {
         val socket = ServerSocket(port)
 
         while (true) {
-            val client = socket.accept()
-            log.info("Accepting connection from=${client.remoteSocketAddress}")
-            val request = HttpRequest.parseHTTPRequest(client.getInputStream())
+            socket.accept().use { client ->
+                log.info("Accepting connection from=${client.remoteSocketAddress}")
+                val request = HttpRequest.parseHTTPRequest(client.getInputStream())
 
-            handlers[request]?.let { handler ->
-                log.info("Handling request $request")
-                val response = HttpResponse()
-                client.getOutputStream().use { os ->
-                    handler(request, response)
-                    sendHTTPResponse(os, response)
-                }
-            } ?: IllegalArgumentException("No handler found for $request")
+                handlers[request]?.let { handler ->
+                    log.info("Handling request $request")
+                    val response = HttpResponse()
+                    client.getOutputStream().use { os ->
+                        handler(request, response)
+                        sendHTTPResponse(os, response)
+                    }
+                } ?: IllegalArgumentException("No handler found for $request")
+            }
         }
     }
 
@@ -52,7 +53,7 @@ class WebServer(private val port: Int = 8080) {
         this.write(snl.toByteArray())
     }
 
-    fun handle(method: HttpMethod, path: String, handler: (HttpRequest, HttpResponse) -> Unit) {
+    fun handle(method: HttpMethod, path: String, handler: HttpHandler) {
         handlers[HttpRequest(method, path)] = handler
     }
 }
